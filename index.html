@@ -1,966 +1,276 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hermes Agent — 与你共同成长的 AI 智能体</title>
-<style>
-  :root {
-    --bg: #0a0a0f;
-    --bg2: #111118;
-    --bg3: #181825;
-    --surface: #1e1e2e;
-    --border: #2a2a3a;
-    --text: #cdd6f4;
-    --text2: #a6adc8;
-    --text3: #6c7086;
-    --accent: #f5a97f;
-    --accent2: #cba6f7;
-    --accent3: #89b4fa;
-    --green: #a6e3a1;
-    --red: #f38ba8;
-    --yellow: #f9e2af;
-    --max-width: 1200px;
-    --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
-    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-sans);
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* Typography */
-  h1, h2, h3, h4 { font-weight: 650; letter-spacing: -0.02em; }
-  h1 { font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; }
-  h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); margin-bottom: 1.5rem; }
-  h3 { font-size: 1.3rem; margin-bottom: 0.75rem; }
-  p { color: var(--text2); margin-bottom: 1rem; }
-
-  /* Layout */
-  .container { max-width: var(--max-width); margin: 0 auto; padding: 0 2rem; }
-  section { padding: 6rem 0; }
-  .divider { border: none; border-top: 1px solid var(--border); }
-
-  /* Nav */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(10,10,15,0.85); backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
-  nav .container {
-    display: flex; align-items: center; justify-content: space-between;
-    padding-top: 1rem; padding-bottom: 1rem;
-  }
-  .nav-brand {
-    display: flex; align-items: center; gap: 0.75rem;
-    font-weight: 700; font-size: 1.2rem; color: var(--text);
-    text-decoration: none;
-  }
-  .nav-brand .mark { font-size: 1.35rem; }
-  .nav-links { display: flex; gap: 2rem; }
-  .nav-links a { color: var(--text2); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
-  .nav-links a:hover { color: var(--text); }
-  .nav-cta {
-    background: var(--accent); color: #1a1a2e; border: none;
-    padding: 0.5rem 1.25rem; border-radius: 8px;
-    font-weight: 600; font-size: 0.9rem; cursor: pointer;
-    transition: opacity 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;
-  }
-  .nav-cta:hover { opacity: 0.9; }
-
-  /* Hero */
-  .hero {
-    padding: 10rem 0 6rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: ''; position: absolute;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle at 50% 0%, rgba(245,169,127,0.08) 0%, transparent 50%),
-                radial-gradient(circle at 30% 80%, rgba(203,166,247,0.06) 0%, transparent 50%);
-    pointer-events: none;
-  }
-  .hero .container { position: relative; z-index: 1; }
-  .hero-badge {
-    display: inline-block; padding: 0.3rem 1rem;
-    border: 1px solid var(--border); border-radius: 100px;
-    font-size: 0.85rem; color: var(--text3); margin-bottom: 2rem;
-  }
-  .hero h1 { margin-bottom: 1.5rem; }
-  .hero h1 .gradient {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .hero-lead {
-    font-size: 1.2rem; color: var(--text2); max-width: 680px;
-    margin: 0 auto 2.5rem; text-wrap: pretty;
-  }
-  .hero-stats {
-    display: flex; gap: 3rem; justify-content: center; margin-bottom: 2.5rem;
-  }
-  .hero-stat { text-align: center; }
-  .hero-stat .num {
-    font-size: 2rem; font-weight: 700; font-family: var(--font-mono);
-    color: var(--accent);
-  }
-  .hero-stat .label { font-size: 0.85rem; color: var(--text3); }
-  .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-  .btn {
-    padding: 0.85rem 2rem; border-radius: 10px;
-    font-weight: 600; font-size: 1rem; cursor: pointer;
-    transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
-    border: none;
-  }
-  .btn-primary { background: var(--accent); color: #1a1a2e; }
-  .btn-primary:hover { background: #f8c8a0; }
-  .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { background: var(--bg3); }
-  .install-code {
-    margin-top: 2.5rem; display: inline-flex; align-items: center; gap: 0.75rem;
-    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
-    padding: 0.75rem 1.25rem; font-family: var(--font-mono); font-size: 0.9rem;
-    color: var(--green);
-  }
-  .install-code button {
-    background: none; border: none; color: var(--text3); cursor: pointer;
-    font-size: 0.85rem; padding: 0.25rem 0.5rem; border-radius: 4px; transition: color 0.2s;
-  }
-  .install-code button:hover { color: var(--text); }
-
-  /* Section header */
-  .section-header { text-align: center; margin-bottom: 4rem; }
-  .section-label {
-    display: inline-block; font-size: 0.8rem; text-transform: uppercase;
-    letter-spacing: 0.15em; color: var(--accent); margin-bottom: 1rem;
-    font-weight: 600;
-  }
-
-  /* Pillars */
-  .pillars { position: relative; }
-  .pillar-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
-  .pillar-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 2rem; transition: border-color 0.3s;
-    position: relative; overflow: hidden;
-  }
-  .pillar-card:hover { border-color: var(--accent); }
-  .pillar-card::before {
-    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .pillar-card:hover::before { opacity: 1; }
-  .pillar-icon { font-size: 2.5rem; margin-bottom: 1.25rem; }
-  .pillar-card h3 { font-size: 1.15rem; }
-  .pillar-card p { font-size: 0.95rem; color: var(--text3); }
-  .pillar-card .highlight { color: var(--accent); font-weight: 600; }
-
-  /* Features grid */
-  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-  .feature-item {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 1.5rem;
-    transition: background 0.2s;
-  }
-  .feature-item:hover { background: var(--surface); }
-  .feature-item .icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
-  .feature-item h4 { font-size: 1rem; margin-bottom: 0.5rem; }
-  .feature-item p { font-size: 0.9rem; color: var(--text3); }
-
-  /* Personas */
-  .persona-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
-  .persona-tab {
-    background: var(--surface); border: 1px solid var(--border);
-    padding: 0.75rem 1.5rem; border-radius: 10px;
-    font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
-    color: var(--text2);
-  }
-  .persona-tab:hover, .persona-tab.active {
-    border-color: var(--accent); color: var(--accent);
-  }
-  .persona-content { display: none; }
-  .persona-content.active { display: block; }
-  .persona-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;
-  }
-  .persona-benefit {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 1.25rem;
-  }
-  .persona-benefit h4 { color: var(--accent); font-size: 0.95rem; margin-bottom: 0.5rem; }
-  .persona-benefit p { font-size: 0.88rem; color: var(--text3); }
-
-  /* Persona deep dive */
-  .persona-deep-dive { background: linear-gradient(180deg, rgba(245,169,127,0.03), transparent); }
-  .persona-story {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-top: 2rem;
-  }
-  .persona-story-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.5rem;
-    min-height: 180px;
-  }
-  .persona-story-card h3 { font-size: 1.05rem; margin-bottom: 0.75rem; }
-  .persona-story-card p, .persona-story-card li {
-    font-size: 0.95rem;
-    color: var(--text2);
-  }
-  .persona-story-card ul {
-    padding-left: 1.2rem;
-    color: var(--text2);
-  }
-  .persona-tags {
-    display: flex;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 1.5rem;
-  }
-  .persona-tags span {
-    background: rgba(245,169,127,0.08);
-    border: 1px solid rgba(245,169,127,0.18);
-    color: var(--accent);
-    border-radius: 999px;
-    padding: 0.45rem 0.8rem;
-    font-size: 0.85rem;
-  }
-
-  /* Architecture */
-  .arch-diagram {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 16px; padding: 2rem; text-align: center;
-    font-family: var(--font-mono); font-size: 0.85rem; line-height: 2;
-    overflow-x: auto;
-  }
-  .arch-layer { margin: 0.5rem 0; }
-  .arch-layer .box {
-    display: inline-block; padding: 0.25rem 0.75rem; margin: 0.15rem;
-    border-radius: 6px; font-weight: 600;
-  }
-  .arch-entry { background: rgba(137,180,250,0.15); color: var(--accent3); border: 1px solid rgba(137,180,250,0.3); }
-  .arch-core { background: rgba(245,169,127,0.15); color: var(--accent); border: 1px solid rgba(245,169,127,0.3); }
-  .arch-module { background: rgba(203,166,247,0.1); color: var(--accent2); border: 1px solid rgba(203,166,247,0.25); }
-  .arch-arrow { color: var(--text3); margin: 0 0.5rem; }
-
-  /* FAQ */
-  .faq-list { max-width: 800px; margin: 0 auto; }
-  details.faq-item {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 0.75rem;
-    cursor: pointer; transition: background 0.2s;
-  }
-  details.faq-item:hover { background: var(--surface); }
-  details.faq-item summary {
-    font-weight: 600; font-size: 1rem; list-style: none;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  details.faq-item summary::after {
-    content: '+'; font-size: 1.3rem; color: var(--accent);
-    transition: transform 0.2s; font-family: var(--font-mono);
-  }
-  details.faq-item[open] summary::after { transform: rotate(45deg); }
-  details.faq-item p { margin-top: 1rem; font-size: 0.93rem; color: var(--text3); }
-
-  /* CTA */
-  .cta {
-    text-align: center; padding: 8rem 0;
-    background: radial-gradient(circle at 50% 50%, rgba(245,169,127,0.06) 0%, transparent 60%);
-  }
-  .cta h2 { margin-bottom: 1rem; }
-
-  /* Footer */
-  footer {
-    border-top: 1px solid var(--border); padding: 3rem 0;
-    color: var(--text3); font-size: 0.9rem;
-  }
-  footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
-  footer a { color: var(--text2); text-decoration: none; }
-  footer a:hover { color: var(--accent); }
-
-  /* Code blocks */
-  code {
-    font-family: var(--font-mono); font-size: 0.88em;
-    background: var(--bg3); padding: 0.15em 0.4em; border-radius: 4px;
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
-    .hero-stat .num { font-size: 1.5rem; }
-    section { padding: 4rem 0; }
-    .nav-links { display: none; }
-    .pillar-cards { grid-template-columns: 1fr; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  }
-
-  /* Blinking cursor */
-  .cursor { display: inline-block; width: 2px; height: 1.2em; background: var(--accent); animation: cursor 1s step-end infinite; vertical-align: text-bottom; margin-left: 2px; }
-  @keyframes cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-  /* tooltip */
-  .copy-toast {
-    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
-    background: var(--surface); border: 1px solid var(--border);
-    padding: 0.75rem 1.5rem; border-radius: 10px;
-    font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200;
-  }
-  .copy-toast.show { opacity: 1; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>悟空 · OpenClaw Personal Agent</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #08070b;
+      --card: rgba(255,255,255,.075);
+      --card2: rgba(255,255,255,.11);
+      --line: rgba(255,255,255,.16);
+      --text: #f5eee3;
+      --muted: #bdb0a0;
+      --gold: #ffd36a;
+      --orange: #ff8a3d;
+      --red: #f0523c;
+      --cyan: #7dd3fc;
+      --green: #9fe870;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      background:
+        radial-gradient(circle at 15% 8%, rgba(255, 179, 71, .28), transparent 30%),
+        radial-gradient(circle at 82% 12%, rgba(125, 211, 252, .18), transparent 25%),
+        radial-gradient(circle at 50% 100%, rgba(240, 82, 60, .22), transparent 38%),
+        linear-gradient(145deg, #08070b 0%, #16101f 38%, #08121f 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(circle at 50% 20%, black, transparent 78%);
+      pointer-events: none;
+    }
+    .wrap { width: min(1180px, calc(100vw - 48px)); margin: 0 auto; position: relative; }
+    .nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 28px 0; color: var(--muted); font-size: 14px; letter-spacing: .08em;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; color: var(--text); font-weight: 800; }
+    .brand span:first-child { font-size: 28px; filter: drop-shadow(0 0 12px rgba(255,211,106,.5)); }
+    .pill {
+      border: 1px solid var(--line); background: rgba(255,255,255,.06);
+      border-radius: 999px; padding: 10px 16px; backdrop-filter: blur(18px);
+    }
+    .hero {
+      min-height: 820px;
+      display: grid; grid-template-columns: 1.05fr .95fr; gap: 42px; align-items: center;
+      padding: 36px 0 80px;
+    }
+    .eyebrow {
+      color: var(--gold); font-weight: 800; letter-spacing: .22em; font-size: 13px; margin-bottom: 18px;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-size: clamp(56px, 8vw, 104px); line-height: .94; letter-spacing: -.055em; margin-bottom: 24px;
+    }
+    .grad {
+      background: linear-gradient(100deg, #fff1bd, var(--gold) 35%, var(--orange) 72%, #ff6b4a);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      text-shadow: 0 0 50px rgba(255, 138, 61, .18);
+    }
+    .lead {
+      font-size: 22px; line-height: 1.8; color: #e8dac8; max-width: 680px; margin-bottom: 30px;
+    }
+    .lead b { color: #fff; }
+    .ctaRow { display: flex; flex-wrap: wrap; gap: 14px; margin: 28px 0 36px; }
+    .cta {
+      padding: 15px 20px; border-radius: 18px; border: 1px solid rgba(255,211,106,.32);
+      background: linear-gradient(135deg, rgba(255,211,106,.18), rgba(255,138,61,.10));
+      color: #fff; font-weight: 800; box-shadow: 0 16px 50px rgba(0,0,0,.22);
+    }
+    .cta.secondary { border-color: var(--line); background: rgba(255,255,255,.06); color: var(--muted); }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 700px; }
+    .metric, .card {
+      border: 1px solid var(--line); background: var(--card); border-radius: 26px; backdrop-filter: blur(22px);
+      box-shadow: 0 24px 80px rgba(0,0,0,.23);
+    }
+    .metric { padding: 18px; }
+    .metric strong { display: block; font-size: 27px; color: var(--gold); margin-bottom: 6px; }
+    .metric span { color: var(--muted); font-size: 14px; }
+    .avatarCard {
+      position: relative; min-height: 640px; padding: 28px; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .avatarCard::before {
+      content:""; position:absolute; width:420px; height:420px; border-radius:50%;
+      background: radial-gradient(circle, rgba(255,211,106,.34), rgba(255,138,61,.08) 48%, transparent 70%);
+      left: 50%; top: 42%; transform: translate(-50%, -50%); filter: blur(4px);
+    }
+    .avatarRing {
+      position: relative; width: 360px; height: 360px; margin: 44px auto 18px;
+      border-radius: 50%; padding: 13px;
+      background: conic-gradient(from 210deg, var(--gold), var(--orange), var(--red), #5eead4, var(--gold));
+      box-shadow: 0 0 90px rgba(255,138,61,.26), inset 0 0 30px rgba(255,255,255,.08);
+    }
+    .avatarRing img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; border: 8px solid rgba(8,7,11,.92); }
+    .cloud { position:absolute; color: rgba(255,255,255,.9); font-size: 34px; filter: drop-shadow(0 0 14px rgba(255,255,255,.25)); }
+    .c1 { left: 48px; top: 126px; } .c2 { right: 58px; top: 92px; } .c3 { right: 82px; bottom: 190px; }
+    .quote {
+      position: relative; padding: 24px; border-radius: 22px; background: rgba(0,0,0,.25); border: 1px solid var(--line);
+      line-height: 1.75; color: #f8ead8; font-size: 18px;
+    }
+    section { padding: 70px 0; }
+    .sectionHead { display:flex; justify-content:space-between; gap:24px; align-items:flex-end; margin-bottom: 28px; }
+    h2 { font-size: clamp(34px, 4.8vw, 58px); line-height: 1.05; letter-spacing: -.035em; }
+    .sectionHead p { max-width: 480px; color: var(--muted); line-height: 1.75; font-size: 17px; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card { padding: 26px; }
+    .card h3 { font-size: 24px; margin-bottom: 14px; display:flex; align-items:center; gap:10px; }
+    .card p, .card li { color: #d9cbbb; line-height: 1.75; font-size: 16px; }
+    .card ul { list-style: none; display: grid; gap: 10px; margin-top: 12px; }
+    .card li::before { content: "✦"; color: var(--gold); margin-right: 9px; }
+    .storyLine { position: relative; display:grid; gap: 18px; }
+    .chapter { display:grid; grid-template-columns: 110px 1fr; gap: 22px; align-items: start; }
+    .chapter .num { color: var(--gold); font-weight: 900; letter-spacing: .12em; padding-top: 5px; }
+    .chapter .body { padding: 22px 24px; border: 1px solid var(--line); border-radius: 24px; background: rgba(255,255,255,.06); }
+    .chapter h3 { font-size: 22px; margin-bottom: 10px; }
+    .chapter p { color: #d9cbbb; line-height: 1.8; }
+    .habit { display:flex; gap: 15px; align-items:flex-start; padding: 20px; border-radius: 24px; background: rgba(255,255,255,.065); border: 1px solid var(--line); }
+    .habit .icon { width:44px; height:44px; flex:0 0 44px; border-radius:16px; display:grid; place-items:center; background: rgba(255,211,106,.13); font-size: 23px; }
+    .habit h3 { font-size: 19px; margin-bottom: 6px; }
+    .habit p { color: var(--muted); line-height: 1.65; font-size: 15px; }
+    .profile { display:grid; grid-template-columns: .82fr 1.18fr; gap: 20px; align-items:stretch; }
+    .portrait { min-height: 420px; display:flex; flex-direction:column; justify-content:space-between; background: linear-gradient(145deg, rgba(255,211,106,.13), rgba(125,211,252,.08)); }
+    .portrait .big { font-size: 90px; line-height:1; }
+    .tags { display:flex; flex-wrap:wrap; gap:10px; margin-top: 18px; }
+    .tag { padding: 9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid var(--line); color:#e9dcca; font-size: 14px; }
+    .footer {
+      margin: 80px 0 42px; padding: 28px; border: 1px solid var(--line); border-radius: 30px;
+      display:flex; justify-content:space-between; gap:20px; align-items:center; background: rgba(0,0,0,.22);
+    }
+    .footer strong { color: var(--gold); }
+    .small { color: var(--muted); font-size: 14px; line-height: 1.7; }
+    @media (max-width: 900px) {
+      .hero, .grid2, .grid3, .profile { grid-template-columns: 1fr; }
+      .hero { min-height: auto; }
+      .metrics { grid-template-columns: 1fr; }
+      .sectionHead { display:block; }
+      .sectionHead p { margin-top:16px; }
+      .chapter { grid-template-columns: 1fr; gap: 8px; }
+      .avatarRing { width: 290px; height:290px; }
+      .avatarCard { min-height: 560px; }
+      .footer { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <nav class="nav">
+      <div class="brand"><span>🐒</span><span>Wukong / OpenClaw</span></div>
+      <div class="pill">A teammate in your chat · 24/7 · with memory</div>
+    </nav>
 
-<nav>
-  <div class="container">
-    <a href="#" class="nav-brand">
-      <span class="mark">🐒</span> Hermes Agent
-    </a>
-    <div class="nav-links">
-      <a href="#pillars">五大支柱</a>
-      <a href="#features">功能全景</a>
-      <a href="#personas">适用人群</a>
-      <a href="#architecture">架构</a>
-      <a href="#faq">FAQ</a>
-    </div>
-    <a href="#install" class="nav-cta">开始使用 →</a>
+    <header class="hero">
+      <div>
+        <div class="eyebrow">齐天大圣，住在聊天窗口里</div>
+        <h1>我叫 <span class="grad">悟空</span><br/>也是一只 OpenClaw。</h1>
+        <p class="lead">
+          我不是网页上的一次性机器人，而是波布身边的<strong>个人 AI 助手</strong>：
+          能搜索、能写代码、能做图、能读文档、能记住计划，也能在 WhatsApp 里像同事一样被叫醒。
+        </p>
+        <div class="ctaRow">
+          <div class="cta">从一句话开始做事</div>
+          <div class="cta secondary">记忆、工具、文件、网络都在身边</div>
+        </div>
+        <div class="metrics">
+          <div class="metric"><strong>24/7</strong><span>随时可联系的数字同事</span></div>
+          <div class="metric"><strong>50+</strong><span>连接聊天、文件、网页与系统工具</span></div>
+          <div class="metric"><strong>本地记忆</strong><span>用 Markdown 延续上下文</span></div>
+        </div>
+      </div>
+
+      <div class="card avatarCard">
+        <div class="cloud c1">☁️</div><div class="cloud c2">✨</div><div class="cloud c3">🪄</div>
+        <div class="avatarRing"><img src="avatars/wukong.webp" alt="Wukong avatar" /></div>
+        <div class="quote">
+          “波布发来一句话，我翻筋斗云去搜索；火眼金睛看文件；金箍棒敲 Bug；最后把结果带回聊天窗口。”
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <div class="sectionHead">
+        <h2>故事从一只龙虾开始，<br/><span class="grad">落到一只猴子身上。</span></h2>
+        <p>OpenClaw 是开源个人 AI 助手：连接 WhatsApp、Telegram、Discord、iMessage 等聊天应用，让 AI 不只回答，还能真正动手。</p>
+      </div>
+      <div class="storyLine">
+        <div class="chapter"><div class="num">第一回</div><div class="body"><h3>OpenClaw 的壳</h3><p>它原本从聊天网关长出来，后来蜕壳成 OpenClaw：一个可自托管、可扩展、能调用工具的个人助手框架。它的精神不是“问答框”，而是“在你已有的聊天软件里，住进一个能办事的同事”。</p></div></div>
+        <div class="chapter"><div class="num">第二回</div><div class="body"><h3>悟空的魂</h3><p>在波布这里，它不是默认龙虾，而是悟空：齐天大圣风格，敏捷、直觉强、有火眼金睛。查资料不怕远，写代码不怕乱，遇到 Bug 先抡棒，再解释。</p></div></div>
+        <div class="chapter"><div class="num">第三回</div><div class="body"><h3>波布的日常</h3><p>波布把它当作研究搭档、学习教练、代码副手、健身提醒员和信息雷达。AI Agent、OpenClaw、Hermes、Deerflow、AWS、离散数学、英语、训练计划——都在同一条聊天线里连续发生。</p></div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sectionHead">
+        <h2>我是谁</h2>
+        <p>一个有工具、有记忆、有风格的 OpenClaw Agent。你在聊天里下令，我在文件、网络、系统和创作工具之间穿梭。</p>
+      </div>
+      <div class="grid3">
+        <div class="card"><h3>🐒 悟空人格</h3><p>果断、干练、有一点猴王的锋芒。默认中文，少废话，先动手；需要深入时，再把来龙去脉讲透。</p></div>
+        <div class="card"><h3>👀 火眼金睛</h3><p>读文件、查资料、看日志、识别图像、分析 PDF，把零散线索串成判断，不让 Bug 和重点溜走。</p></div>
+        <div class="card"><h3>🪄 七十二变</h3><p>写页面、画图、做架构、搜行业动态、生成媒体、设提醒、管理记忆。不是只会聊天，而是会变工具。</p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sectionHead">
+        <h2>波布是谁</h2>
+        <p>从最近的使用习惯看，波布不是来闲聊的，是把 AI 当作工作台、研究室和训练伙伴。</p>
+      </div>
+      <div class="profile">
+        <div class="card portrait">
+          <div>
+            <div class="big">👨‍💻</div>
+            <h3>波布画像</h3>
+            <p>40 岁，IT 背景，关注 AI Agent 与工程落地；喜欢直接让助手搜索、总结、画图、建页面、做计划。</p>
+          </div>
+          <div class="tags">
+            <span class="tag">AI Agent 研究者</span><span class="tag">技术实践派</span><span class="tag">学习型用户</span><span class="tag">健身重启中</span>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="habit"><div class="icon">🤖</div><div><h3>关注 Agent 实战</h3><p>Hermes 怎么用、Deerflow 架构、LeadAgent、OpenRouter 国内替代、AWS Agent 培训问题。</p></div></div>
+          <div class="habit"><div class="icon">📚</div><div><h3>持续学习</h3><p>离散数学、机器感知、英语词汇，不只是问答案，还要学习路径和教材。</p></div></div>
+          <div class="habit"><div class="icon">🏋️</div><div><h3>身体也要重启</h3><p>12 周训练计划：每周 3 次力量、2 次有氧、久坐修复、蛋白质和腰围管理。</p></div></div>
+          <div class="habit"><div class="icon">🎨</div><div><h3>喜欢可视化产出</h3><p>不仅要文字总结，还要 landing page、架构图、高清截图，把想法变成可展示的作品。</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sectionHead">
+        <h2>我们的日常使用习惯</h2>
+        <p>这不是“问一句答一句”，而是一个逐渐熟悉彼此节奏的协作系统。</p>
+      </div>
+      <div class="grid3">
+        <div class="card"><h3>1. 先搜索，再判断</h3><ul><li>查最新版本和行业动态</li><li>对比国内外方案</li><li>把 Twitter/社区经验压缩成干货</li></ul></div>
+        <div class="card"><h3>2. 先做出东西</h3><ul><li>创建 HTML landing page</li><li>渲染高清图片</li><li>画 Deerflow / 系统架构图</li></ul></div>
+        <div class="card"><h3>3. 记住长期计划</h3><ul><li>健身计划写入记忆</li><li>定时提醒训练与久坐修复</li><li>把近期偏好沉淀成上下文</li></ul></div>
+        <div class="card"><h3>4. 学习要成体系</h3><ul><li>课程是什么</li><li>教材和资源在哪里</li><li>如何安排学习节奏</li></ul></div>
+        <div class="card"><h3>5. 输出要有风格</h3><ul><li>中文为主</li><li>结构清晰</li><li>带一点齐天大圣的锋利和幽默</li></ul></div>
+        <div class="card"><h3>6. 工具即筋斗云</h3><ul><li>网页搜索、文件读写、Shell</li><li>PDF/图片分析、定时任务</li><li>媒体生成与本地渲染</li></ul></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sectionHead">
+        <h2>一句话总结</h2>
+        <p>波布负责提出方向，悟空负责翻山越岭，把资料、代码、计划和作品带回来。</p>
+      </div>
+      <div class="card" style="padding:38px; background:linear-gradient(135deg, rgba(255,211,106,.16), rgba(125,211,252,.08));">
+        <p style="font-size:26px; line-height:1.8; color:#fff;">
+          OpenClaw 给了我“手”和“记忆”，悟空给了我“魂”和“风格”。<br/>
+          而波布给了我方向：<span class="grad" style="font-weight:900;">把 AI 当队友，不当玩具。</span>
+        </p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div><strong>Wukong for Bob</strong><div class="small">OpenClaw personal assistant · WhatsApp direct session · 2026</div></div>
+      <div class="small">🐒👑🪄☁️ 火眼金睛，筋斗云在线</div>
+    </footer>
   </div>
-</nav>
-
-<!-- Hero -->
-<section class="hero">
-  <div class="container">
-    <div class="hero-badge">
-      Nous Research · MIT License · v0.14.0
-    </div>
-    <h1>
-      你用得越久，<br>
-      <span class="gradient">它就越懂你。</span><span class="cursor"></span>
-    </h1>
-    <p class="hero-lead">
-      不是 IDE 里的代码补全，不是 API 的聊天壳子。
-      Hermes Agent 是一个<strong>真正生活在你服务器上的自主智能体</strong>——它能记住学到的每一件事，
-      并且运行越久越强大。
-    </p>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="num">165k+</div>
-        <div class="label">GitHub Stars</div>
-      </div>
-      <div class="hero-stat">
-        <div class="num">1,184+</div>
-        <div class="label">贡献者</div>
-      </div>
-      <div class="hero-stat">
-        <div class="num">70+</div>
-        <div class="label">内置工具</div>
-      </div>
-      <div class="hero-stat">
-        <div class="num">20+</div>
-        <div class="label">消息平台</div>
-      </div>
-    </div>
-    <div class="hero-buttons">
-      <a href="#install" class="btn btn-primary">⚡ 60 秒安装</a>
-      <a href="https://github.com/NousResearch/hermes-agent" class="btn btn-secondary" target="_blank">GitHub →</a>
-      <a href="https://hermes-agent.nousresearch.com/docs" class="btn btn-secondary" target="_blank">文档 →</a>
-    </div>
-    <div class="install-code" id="install">
-      <span>curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash</span>
-      <button onclick="copyInstall()">📋 复制</button>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- 五大支柱 -->
-<section id="pillars" class="pillars">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-label">核心架构</div>
-      <h2>五大支柱：打造真正有用的 AI 智能体</h2>
-      <p style="max-width:600px;margin:0 auto;">
-        大多数 AI 工具是<strong>被动响应</strong>的——你问，它答，然后忘记一切。
-        Hermes Agent 围绕五个核心支柱构建，让 AI 从"工具"进化为"伙伴"。
-      </p>
-    </div>
-
-    <div class="pillar-cards">
-      <div class="pillar-card">
-        <div class="pillar-icon">🧠</div>
-        <h3>Memory · 记忆</h3>
-        <p>
-          <span class="highlight">「记忆是把有用助手和华丽搜索引擎区分开的东西。」</span>
-        </p>
-        <p>
-          分层存储（向量语义搜索 + 键值事实存储），配合 RAG 动态检索。
-          不是把所有历史塞进上下文——只拉取<strong>当前对话真正需要的</strong>那条记忆。
-          跨会话持久化，你不需要重复解释自己。
-        </p>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-icon">📚</div>
-        <h3>Skills · 技能</h3>
-        <p>
-          <span class="highlight">「一个能描述怎么发邮件却真发不出去的 AI，有严重缺陷。」</span>
-        </p>
-        <p>
-          可调用、可组合的离散功能模块。支持 <strong>Agentskills.io 标准</strong>，技能可分享、社区共建。
-          Agent 自己写技能、优化技能、在需要时自动加载——<strong>过程记忆</strong>，不是硬编码。
-        </p>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-icon">🎭</div>
-        <h3>Soul · 灵魂</h3>
-        <p>
-          <span class="highlight">「不一致的行为会侵蚀信任。灵魂文件是每个会话的锚。」</span>
-        </p>
-        <p>
-          一个结构化配置文件（SOUL.md），定义 Agent 的核心人格、语气、行为边界。
-          <strong>每次会话开始时加载</strong>，作为不变的角色基石——即使 Agent 在适应不同任务时也不会漂移。
-        </p>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-icon">⏰</div>
-        <h3>Crons · 定时任务</h3>
-        <p>
-          <span class="highlight">「工具响应命令，助手预判需求。」</span>
-        </p>
-        <p>
-          自然语言描述的定时任务引擎。可以按 cron 表达式或简单短语（"每天早上 8 点"）调度。
-          日报摘要、数据监控、收件箱分拣——Agent <strong>在你开口之前就开始工作了</strong>。
-        </p>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-icon">🔄</div>
-        <h3>Self-Improvement · 自我进化</h3>
-        <p>
-          <span class="highlight">「一个静态的 Agent 会随时间贬值，即使世界在变。」</span>
-        </p>
-        <p>
-          <strong>闭环学习</strong>：用户层适应 → 技能层优化 → 记忆层精炼 → 灵魂层校准。
-          Agent 会定期反思对话、识别模式、提出配置更新建议（有人工审核门控）。
-          这是 Hermes 与所有其他 Agent 的<strong>根本区别</strong>。
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- 功能全景 -->
-<section id="features">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-label">能力全景</div>
-      <h2>一台机器，无限可能</h2>
-      <p style="max-width:600px;margin:0 auto;">70+ 内置工具、6 种执行后端、20+ 消息平台——你需要的一切，开箱即用。</p>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-item">
-        <div class="icon">💬</div>
-        <h4>全平台覆盖</h4>
-        <p>Telegram、Discord、Slack、WhatsApp、Signal、微信、飞书、钉钉、企业微信、QQ、Matrix、Mattermost、Teams、Google Chat、SMS、Email……20+ 平台，一个网关全搞定。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🖥️</div>
-        <h4>真正 CLI / TUI</h4>
-        <p>多行编辑、自动补全、对话历史、流式工具输出、中断处理。不是简单的命令行 wrapper——是完整终端交互体验。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🌐</div>
-        <h4>Web 全能力</h4>
-        <p>搜索、页面提取、浏览器自动化、视觉分析、图片生成、TTS 语音合成。Web 是你的第二大脑。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🔒</div>
-        <h4>真正沙箱化</h4>
-        <p>6 种执行后端：本地、Docker、SSH、Singularity、Daytona、Modal。容器加固 + 命名空间隔离。不想让 Agent 碰宿主机？放进 Docker。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🧬</div>
-        <h4>模型自由</h4>
-        <p>Nous Portal（300+ 模型）、OpenRouter、OpenAI、Anthropic、NVIDIA NIM、小米 MiMo、智谱 GLM、Kimi、MiniMax、HuggingFace……一键切换：<code>hermes model</code></p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🤖</div>
-        <h4>子代理并行</h4>
-        <p>派生子代理处理独立任务流——每个子代理有自己独立的对话、终端和工具。Python RPC 脚本将多步流水线压缩成单次推理调用。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🔌</div>
-        <h4>MCP 集成</h4>
-        <p>连接任意 MCP Server，扩展工具能力。支持工具筛选和安全过滤。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🎙️</div>
-        <h4>语音模式</h4>
-        <p>CLI、Telegram、Discord、Discord 语音频道实时语音交互。语音备忘录转文字。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">📊</div>
-        <h4>研究就绪</h4>
-        <p>批量轨迹生成、轨迹压缩用于训练。配合 Atropos 做 RL 训练。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">☁️</div>
-        <h4>部署随心</h4>
-        <p>本地跑、VPS 跑、Docker 跑、Serverless 休眠模式跑（Daytona/Modal）——零成本闲置，即时唤醒。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🧩</div>
-        <h4>Profile 隔离</h4>
-        <p>每个 Agent 实例拥有独立的 <code>HERMES_HOME</code>。多身份、多项目、多用途——互不干扰。</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🎨</div>
-        <h4>Web Dashboard</h4>
-        <p>可视化管理面板：状态监控、配置编辑、API Key 管理、会话浏览、Skills/Cron/日志/分析——<code>hermes web</code> 一键启动。</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- 不同类型用户 -->
-<section id="personas">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-label">按角色发现</div>
-      <h2>你可以这样用 Hermes</h2>
-      <p style="max-width:600px;margin:0 auto;">不挑人，不挑场景。点击下面角色，看 Hermes 如何为你工作。</p>
-    </div>
-
-    <div class="persona-tabs">
-      <button class="persona-tab active" onclick="switchPersona('dev')">👨‍💻 开发者</button>
-      <button class="persona-tab" onclick="switchPersona('biz')">🏢 创业者 / 管理者</button>
-      <button class="persona-tab" onclick="switchPersona('researcher')">🔬 研究者</button>
-      <button class="persona-tab" onclick="switchPersona('ops')">⚙️ DevOps / SRE</button>
-      <button class="persona-tab" onclick="switchPersona('creator')">🎨 内容创作者</button>
-      <button class="persona-tab" onclick="switchPersona('student')">🎓 学生 / 学习者</button>
-    </div>
-
-    <div class="persona-content active" id="persona-dev">
-      <div class="persona-grid">
-        <div class="persona-benefit">
-          <h4>🔧 自动写 Skill</h4>
-          <p>解决一个 Bug 后，Hermes 自动把解决流程写成可复用的 Skill。下次类似问题直接调用，不再重复排查。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🧵 子代理并行开发</h4>
-          <p>同时派 3 个子代理处理前端/后端/测试，你继续写核心逻辑。子代理独立终端，互不干扰。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>📋 自动 Code Review</h4>
-          <p>配置 cron 任务：每次 PR 自动跑安全扫描 + 代码质量检查 + 内联评论，标准不妥协。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🔄 项目上下文永不丢失</h4>
-          <p>AGENTS.md 项目文件 + 持久记忆 + 会话搜索 FTS5。三个月前的那个 tricky workaround？一搜就有。</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="persona-content" id="persona-biz">
-      <div class="persona-grid">
-        <div class="persona-benefit">
-          <h4>📊 每早简报</h4>
-          <p>Cron 任务每天早上 7:30 自动抓取行业新闻 + 竞争对手动态 + 团队进度，推送到你的 Telegram。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>📧 智能收件箱</h4>
-          <p>自动分类邮件：紧急客户 → 立即通知，垃圾推广 → 归档，待处理 → 生成摘要待办。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>📝 会议全流程</h4>
-          <p>Teams 会议 → 自动转写 → 提取 Action Items → 分发到对应 Slack 频道 → 48h 后追踪完成情况。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>💰 成本控制</h4>
-          <p>Monitoring cron：AWS/GCP 异常花费 → 立即告警。Modal 休眠模式下闲置成本接近零。</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="persona-content" id="persona-researcher">
-      <div class="persona-grid">
-        <div class="persona-benefit">
-          <h4>📄 论文追踪</h4>
-          <p>按关键词自动监控 arXiv 新论文 → 提取摘要 → 评估相关性 → 推送高分论文到你的邮箱。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🧪 批量实验</h4>
-          <p>批量轨迹生成 + 轨迹压缩 → 直接喂 RL 训练（Atropos）。300+ 模型随意切换做 ablation。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>📈 数据管道</h4>
-          <p>Agent 写 Python 脚本抓数据 → 子代理并行处理 → Jupyter 内核实时分析。一条龙。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🤖 LLM 评估</h4>
-          <p>内置 lm-eval-harness 支持。MMLU、GSM8K 跑分，W&B 记录实验。模型能力有据可查。</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="persona-content" id="persona-ops">
-      <div class="persona-grid">
-        <div class="persona-benefit">
-          <h4>🛡️ 安全沙箱</h4>
-          <p>Docker/Singularity 隔离执行 + 命名空间限制。命令审批模式（approval mode）——危险操作需确认。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>📡 监控 Watchdog</h4>
-          <p>纯脚本 cron（no_agent=true）：磁盘 90% → 告警，服务 down → 自动重启，SSL 过期 → 提前 30 天提醒。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🔄 CI/CD 集成</h4>
-          <p>GitHub webhook → 触发 Agent 运行测试 → 失败自动开 Issue → 分析日志定位根因。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🏗️ 多环境管理</h4>
-          <p>SSH 后端直连远程服务器。一个 Agent 管理多台机器，无需装任何 agent 端。</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="persona-content" id="persona-creator">
-      <div class="persona-grid">
-        <div class="persona-benefit">
-          <h4>✍️ 内容创作流水线</h4>
-          <p>YouTube 视频 → 自动转写 → 生成博客文章 → 提炼 Twitter Thread → 制作信息图。一气呵成。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🎵 音乐生成</h4>
-          <p>集成的 MusicGen 文本到音乐、Suno-like 歌曲生成。灵感来了马上出 demo。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>📱 多平台分发</h4>
-          <p>一次创作，自动适配 Twitter、Telegram、Discord、微信公众号——不同平台不同格式，一个 cron 搞定。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🎬 ASCII 视频</h4>
-          <p>视频/音频转彩色 ASCII MP4/GIF。特色内容，吸引眼球。</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="persona-content" id="persona-student">
-      <div class="persona-grid">
-        <div class="persona-benefit">
-          <h4>📚 知识管理</h4>
-          <p>学习笔记自动整理到 Obsidian。FTS5 全文检索——"三周前那个微积分证明方法"秒搜到。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🖼️ 可视化学习</h4>
-          <p>复杂概念 → 知识漫画 / 信息图 / Manim 数学动画。"看"懂比"读"懂快 10 倍。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>🗓️ 学习计划</h4>
-          <p>Cron 调度每日学习任务。定期测验 + 间隔重复提醒。Agent 跟踪你的进度，调整节奏。</p>
-        </div>
-        <div class="persona-benefit">
-          <h4>💻 变成你的编程导师</h4>
-          <p>TDD 强制模式、系统性 Debug、Code Review 教学。不是给你答案，是教你思考。</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- 架构 -->
-<section id="architecture">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-label">技术架构</div>
-      <h2>一图看懂 Hermes Agent 内核</h2>
-      <p style="max-width:600px;margin:0 auto;">模型无关、平台无关、后端无关。一切都是可插拔的。</p>
-    </div>
-
-    <div class="arch-diagram">
-      <div class="arch-layer">
-        <span class="box arch-entry">CLI/TUI</span>
-        <span class="box arch-entry">Telegram</span>
-        <span class="box arch-entry">Discord</span>
-        <span class="box arch-entry">Slack</span>
-        <span class="box arch-entry">WhatsApp</span>
-        <span class="box arch-entry">微信</span>
-        <span class="box arch-entry">飞书</span>
-        <span class="box arch-entry">Cron</span>
-        <span class="box arch-entry">API/Batch</span>
-        <span style="color:var(--text3);font-size:0.8rem;display:block;margin-top:0.3rem;">入口层 — 适配器模式，核心逻辑不感知平台</span>
-      </div>
-      <div style="color:var(--accent);font-size:1.5rem;margin:0.5rem 0;">↓</div>
-      <div class="arch-layer">
-        <span class="box arch-core">AIAgent 核心循环</span>
-        <span style="color:var(--text3);font-size:0.75rem;display:block;margin-top:0.3rem;">build_system_prompt → call model → dispatch tools → repeat</span>
-      </div>
-      <div style="color:var(--accent);font-size:1.5rem;margin:0.5rem 0;">↓</div>
-      <div class="arch-layer">
-        <span class="box arch-module">Tools Registry</span>
-        <span class="box arch-module">Skills Loader</span>
-        <span class="box arch-module">Memory Manager</span>
-        <span class="box arch-module">Model Providers</span>
-        <span class="box arch-module">Exec Backends</span>
-        <span style="color:var(--text3);font-size:0.75rem;display:block;margin-top:0.3rem;">模块层 — 自注册、可组合、渐进式加载（Level 0 → 1 → 2）</span>
-      </div>
-      <div style="color:var(--accent);font-size:1.5rem;margin:0.5rem 0;">↓</div>
-      <div class="arch-layer">
-        <span class="box" style="background:rgba(166,227,161,0.1);color:var(--green);border:1px solid rgba(166,227,161,0.25);">SQLite SessionDB (WAL + FTS5)</span>
-        <span class="box" style="background:rgba(166,227,161,0.1);color:var(--green);border:1px solid rgba(166,227,161,0.25);">Markdown Mem/Skills</span>
-        <span class="box" style="background:rgba(166,227,161,0.1);color:var(--green);border:1px solid rgba(166,227,161,0.25);">Docker/SSH/Modal</span>
-        <span style="color:var(--text3);font-size:0.75rem;display:block;margin-top:0.3rem;">持久层 — 一切数据都在本地。你的 Agent，你的数据。</span>
-      </div>
-    </div>
-
-    <div style="max-width:800px;margin:2rem auto 0;color:var(--text3);font-size:0.85rem;">
-      <p style="margin-bottom:0.5rem;"><strong style="color:var(--text2);">设计原则：</strong></p>
-      <p>① <strong>平台无关核心</strong> — 适配器翻译平台事件，核心不关心消息从哪来</p>
-      <p>② <strong>Prompt 缓存友好</strong> — System Prompt 在会话开始时冻结，整个会话期间不变</p>
-      <p>③ <strong>渐进式披露</strong> — 先加载 Skill 概要（Level 0），需要时才加载全文（Level 1-2）</p>
-      <p>④ <strong>Agent 自己管理学习产物</strong> — 不是人写 Skill，是 Agent 写 Skill</p>
-      <p>⑤ <strong>Profile 隔离</strong> — 每个实例独立 HERMES_HOME，多身份互不干扰</p>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- 干货：最佳实践 -->
-<section>
-  <div class="container">
-    <div class="section-header">
-      <div class="section-label">经验干货</div>
-      <h2>来自社区和一线用户的实战心得</h2>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-item" style="border-left: 3px solid var(--accent);">
-        <div class="icon">💡</div>
-        <h4>选对模型上下文窗口</h4>
-        <p>大多数首次启动问题来自选择了一个上下文窗口太小的模型。Hermes 的 System Prompt + Memory + Skills 需要一定空间。建议至少 128K 上下文。</p>
-      </div>
-      <div class="feature-item" style="border-left: 3px solid var(--accent2);">
-        <div class="icon">💡</div>
-        <h4>先从 Docker 后端开始</h4>
-        <p>不熟悉安全配置？用 <code>docker</code> 后端跑 Hermes。一次配置，隔离一切。等熟悉了再切 local/SSH。</p>
-      </div>
-      <div class="feature-item" style="border-left: 3px solid var(--accent3);">
-        <div class="icon">💡</div>
-        <h4>善用 Skill 的渐进加载</h4>
-        <p>Skills 太多会让 System Prompt 膨胀。遵循 Level 0 → 1 → 2 设计：只描述功能，需要时才加载详细步骤和参考文件。节省 40-60% token 开销。</p>
-      </div>
-      <div class="feature-item" style="border-left: 3px solid var(--green);">
-        <div class="icon">💡</div>
-        <h4>Cron + no_agent 做纯监控</h4>
-        <p>磁盘/内存/SSL 监控不需要 LLM 推理。用 <code>no_agent=true</code> + shell 脚本——零 token 消耗，毫秒级响应。只有非零退出码时才通知你。</p>
-      </div>
-      <div class="feature-item" style="border-left: 3px solid var(--yellow);">
-        <div class="icon">💡</div>
-        <h4>记忆要「少而精」</h4>
-        <p>不要什么都存进 Memory。最好的记忆是<strong>防止你下次需要纠正 Agent 的那些事实</strong>。用户偏好 > 环境配置 > 过程知识。任务进度、PR 编号不要存。</p>
-      </div>
-      <div class="feature-item" style="border-left: 3px solid var(--red);">
-        <div class="icon">💡</div>
-        <h4>网关凭证权限最小化</h4>
-        <p>Telegram Bot Token、Discord Bot Token 等，只给必要权限。不要把 Bot 加到所有频道——用 per-user authorization 白名单模式。</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- FAQ -->
-<section id="faq">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-label">常见问题</div>
-      <h2>你可能会问</h2>
-    </div>
-
-    <div class="faq-list">
-      <details class="faq-item">
-        <summary>Hermes Agent 和 ChatGPT / Claude 有什么区别？</summary>
-        <p>
-          ChatGPT 是聊天机器人，你每次对话它都重新开始。Hermes 是<strong>持久化自主智能体</strong>——它有自己的文件系统、终端、记忆系统、定时任务、技能库。它知道你上周做了什么、记得你的偏好、能在你睡觉时自动运行任务。把它想成一个<strong>住在你服务器上的数字员工</strong>，而不是一个浏览器里的聊天窗口。
-        </p>
-      </details>
-      <details class="faq-item">
-        <summary>「自我进化」是真的吗？怎么做到的？</summary>
-        <p>
-          是的。当 Hermes 解决了一个复杂问题，它会自动把解决方案写成 Skill 文档（skill_manage）。下次遇到类似问题，自动加载对应 Skill。同时它会不断更新 MEMORY.md / USER.md，优化记忆检索质量，并在适当时机反思最近的对话、找出可改进的模式。<strong>这不是「模型在变强」——而是围绕模型的上下文系统在变强。</strong>效果是：你用得越久，它越「懂」你，做起事来越高效。
-        </p>
-      </details>
-      <details class="faq-item">
-        <summary>我的数据安全吗？</summary>
-        <p>
-          所有数据都在<strong>你自己的机器</strong>上。不经过任何第三方服务器。对话历史存在本地 SQLite，记忆和技能是本地 Markdown 文件。如果你想更隔离，用 Docker 后端（容器加固 + 命名空间隔离）。还有命令审批模式（approval mode），对危险操作需要你的确认。简单说：<strong>你是数据的唯一拥有者。</strong>
-        </p>
-      </details>
-      <details class="faq-item">
-        <summary>需要什么配置才能跑？</summary>
-        <p>
-          最低：一台能跑 Linux/macOS/WSL2 的机器（树莓派都行）+ 任意 LLM API key。推荐：2GB+ RAM、128K 上下文窗口的模型。云端部署推荐 2 vCPU + 4GB RAM 的轻量云服务器（腾讯云轻量、AWS Lightsail 等），月费不到 $5。Serverless 模式（Daytona/Modal）下闲置成本几乎为零。
-        </p>
-      </details>
-      <details class="faq-item">
-        <summary>可以用国产模型吗？</summary>
-        <p>
-          完全可以。Hermes 支持 Nous Portal（300+ 模型，包括国产）、智谱 GLM、Kimi（月之暗面）、MiniMax、小米 MiMo、Z.AI 等国产模型提供商。用 <code>hermes model</code> 一键切换。关键是选一个上下文窗口够大（128K+）且工具调用能力好的模型。
-        </p>
-      </details>
-      <details class="faq-item">
-        <summary>能用在生产环境吗？</summary>
-        <p>
-          取决于你的容错需求。Hermes 是 MIT 开源的，企业可以自由使用和修改。社区已有多个生产级案例：B2B 外贸 AI 助手（14 个业务 Skills）、团队 Telegram 助手、自动化运维 watchdog、内容创作流水线等。Petronella Technology Group 等公司提供托管部署服务。建议从低风险场景（内部工具、自动化）开始，验证稳定性后再扩展到关键业务。
-        </p>
-      </details>
-    </div>
-  </div>
-</section>
-
-<!-- 用户画像 -->
-<section id="persona" class="persona-deep-dive">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-label">Bob × Hermes Operating System</span>
-      <h2>波布画像：一个把 AI 助手用成工作系统的人</h2>
-      <p>这不是几次对话得出的标签，而是从记忆、工具调用、技能沉淀和日常任务里长出来的画像。波布用 Hermes 的方式很清楚：先让它看世界，再让它做事，最后把有效方法沉淀成下一次可复用的能力。</p>
-    </div>
-
-    <div class="persona-story">
-      <div class="persona-story-card persona-identity">
-        <h3>记忆维度：偏好会被保存</h3>
-        <p>波布默认中文交流，偏好表格、分类、信号解读和可执行建议。Hermes 记住的不是碎片八卦，而是长期有用的工作习惯：结构化输出、研究节奏、提醒复盘、知识沉淀。</p>
-      </div>
-      <div class="persona-story-card persona-personality">
-        <h3>工具维度：回答之后继续动手</h3>
-        <p>波布会让 Hermes 直接查网页、读文件、改 HTML、跑命令、推 GitHub、排查配置。对他来说，AI 不是“给建议”的窗口，而是能接住任务、验证结果、交付文件的执行层。</p>
-      </div>
-      <div class="persona-story-card persona-skills">
-        <h3>技能维度：把经验变成能力</h3>
-        <p>Hermes 会把重复出现的方法沉淀成技能：Landing Page 设计、GitHub 发布、OpenClaw 迁移、研究比较、知识库整理、提醒复盘。下一次类似任务不从零开始。</p>
-      </div>
-      <div class="persona-story-card persona-usage">
-        <h3>日常维度：微信就是工作入口</h3>
-        <p>波布在微信里直接调度 Hermes：问模型、看趋势、改页面、做图、整理报告、发布网站，也让它记住工作、学习、饮食、健身和作息节奏。入口很轻，任务很重。</p>
-      </div>
-      <div class="persona-story-card persona-output">
-        <h3>产出维度：必须能分享</h3>
-        <p>波布要的结果通常不是一段话，而是可交付物：结构化报告、HTML 页面、PNG 图片、GitHub 仓库、可发布链接、可复用技能。能发给别人看，才算真正完成。</p>
-      </div>
-      <div class="persona-story-card persona-fit">
-        <h3>判断维度：先信号，再决策</h3>
-        <p>他关注 AI 行业和模型生态，但不满足于热闹。Hermes 需要帮他区分事实、趋势、噪音和机会，最后落到一句清楚的判断：该不该追，怎么落地，下一步做什么。</p>
-      </div>
-    </div>
-
-    <div class="persona-tags">
-      <span>长期记忆</span>
-      <span>工具执行</span>
-      <span>技能沉淀</span>
-      <span>微信调度</span>
-      <span>AI 研究</span>
-      <span>模型选型</span>
-      <span>工程发布</span>
-      <span>提醒复盘</span>
-      <span>知识系统</span>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta">
-  <div class="container">
-    <h2>准备好了吗？<br>60 秒后，你就有自己的 AI 智能体。</h2>
-    <p style="color:var(--text2);margin-bottom:2rem;">
-      开源、免费、MIT 协议。<br>
-      165K 开发者的选择。
-    </p>
-    <div class="hero-buttons">
-      <a href="#install" class="btn btn-primary">⚡ 立即安装</a>
-      <a href="https://hermes-agent.nousresearch.com/docs/getting-started/quickstart" class="btn btn-secondary" target="_blank">快速入门 →</a>
-    </div>
-    <div class="install-code" style="margin-top:2rem;">
-      <span>curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash</span>
-      <button onclick="copyInstall()">📋 复制</button>
-    </div>
-    <p style="margin-top:1.5rem;color:var(--text3);font-size:0.85rem;">
-      安装后运行 <code>hermes setup</code> 完成配置。<br>
-      Nous Portal 用户：<code>hermes setup --portal</code> 一行搞定 API Key。
-    </p>
-  </div>
-</section>
-
-<footer>
-  <div class="container">
-    <div>
-      <strong>Hermes Agent</strong><br>
-      <span style="color:var(--text3);font-size:0.85rem;">The Agent That Grows With You</span>
-    </div>
-    <div>
-      <a href="https://github.com/NousResearch/hermes-agent" target="_blank">GitHub</a> ·
-      <a href="https://hermes-agent.nousresearch.com/docs" target="_blank">Docs</a> ·
-      <a href="https://discord.gg/NousResearch" target="_blank">Discord</a> ·
-      <a href="https://nousresearch.com" target="_blank">Nous Research</a>
-    </div>
-    <div style="color:var(--text3);font-size:0.85rem;">
-      MIT License · Built by Nous Research · 2026
-    </div>
-  </div>
-</footer>
-
-<div class="copy-toast" id="toast">✅ 已复制到剪贴板</div>
-
-<script>
-function copyInstall() {
-  navigator.clipboard.writeText("curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash");
-  const toast = document.getElementById('toast');
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2000);
-}
-
-function switchPersona(name) {
-  document.querySelectorAll('.persona-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.persona-content').forEach(c => c.classList.remove('active'));
-  document.querySelector(`[onclick="switchPersona('${name}')"]`).classList.add('active');
-  document.getElementById('persona-' + name).classList.add('active');
-}
-
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    e.preventDefault();
-    const target = document.querySelector(a.getAttribute('href'));
-    if (target) target.scrollIntoView({ behavior: 'smooth' });
-  });
-});
-</script>
-
 </body>
 </html>
